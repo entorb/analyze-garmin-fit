@@ -1,4 +1,4 @@
-"""Check parameters."""
+"""Read .fit file and print available fields."""
 
 # see https://towardsdatascience.com/parsing-fitness-tracker-data-with-python-a59e7dc17418
 import warnings

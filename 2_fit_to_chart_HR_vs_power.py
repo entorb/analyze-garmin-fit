@@ -1,12 +1,12 @@
 """
-.fit to Chart: HR vs. Watt.
+.fit to chart of heart rate vs. power.
 
 read .fit files in data/
-convert to Pandas DataFrames
-plot raw data of Power and Heart Rate vs. time
-Export raw data as Excel sheet
+convert to Pandas DataFrame
+plot raw data of power and heart rate vs. time
+export raw data as Excel sheet
 group by power
-plot Watt vs. HR
+plot heart rate vs. power
 
 only use for comparative tracks, preferable power ramps
 """
@@ -124,7 +124,7 @@ def df_to_excel(df: pd.DataFrame) -> None:
 
 def plot_hr_vs_time(df: pd.DataFrame, file_in: Path) -> None:
     """
-    Plot actvity.
+    Plot activity.
 
     plot heart_rate and power over seconds, use hear_rate as secondary axis
     """
