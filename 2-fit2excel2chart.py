@@ -11,10 +11,15 @@ see https://towardsdatascience.com/parsing-fitness-tracker-data-with-python-a59e
 and
 https://github.com/bunburya/fitness_tracker_data_parsing/blob/main/parse_fit.py
 """
+
+# TODO: make file ruff-compatible
+# ruff: noqa
+
 import datetime as dt  # import datetime, timedelta
 import os
 import sys
 import warnings
+from pathlib import Path
 
 import fitdecode  # pip install fitdecode
 import matplotlib.colors as mcolors
@@ -23,13 +28,13 @@ import numpy as np
 import pandas as pd
 
 # from sys import argv
-# fileIn = argv[1]  # Path to FIT file to be given as first argument to script
-fileIn = "2022-07-28-140730-ELEMNT BOLT 7172-139-0.fit"
-fileIn = "2022-07-31-062038-ELEMNT BOLT 7172-141-0.fit"
-fileIn = "data/231111.fit"
+# file_in = argv[1]  # Path to FIT file to be given as first argument to script
+file_in = "2022-07-28-140730-ELEMNT BOLT 7172-139-0.fit"
+file_in = "2022-07-31-062038-ELEMNT BOLT 7172-141-0.fit"
+file_in = "data/231111.fit"
 
 # ensure working dir is script dir
-os.chdir(os.path.dirname(sys.argv[0]))
+os.chdir(Path(sys.argv[0]).parent)
 
 warnings.filterwarnings("ignore", message=".*native_field_num.*not found in message.*")
 
@@ -125,9 +130,9 @@ def get_fit_point_data(
         # Frame does not have any latitude or longitude data.
         # We will ignore these frames in order to keep things simple
         return None
-    else:
-        data["latitude"] = frame.get_value("position_lat") / ((2**32) / 360)
-        data["longitude"] = frame.get_value("position_long") / ((2**32) / 360)
+
+    data["latitude"] = frame.get_value("position_lat") / ((2**32) / 360)
+    data["longitude"] = frame.get_value("position_long") / ((2**32) / 360)
 
     for field in POINTS_COLUMN_NAMES:
         if frame.has_field(field):
@@ -135,7 +140,7 @@ def get_fit_point_data(
     return data
 
 
-def get_dataframes(fileIn: str) -> tuple[pd.DataFrame, pd.DataFrame]:
+def get_dataframes(file_in: str) -> tuple[pd.DataFrame, pd.DataFrame]:
     """
     Get DFs.
 
@@ -146,7 +151,7 @@ def get_dataframes(fileIn: str) -> tuple[pd.DataFrame, pd.DataFrame]:
     points_data = []
     laps_data = []
     lap_no = 1
-    with fitdecode.FitReader(fileIn) as fit_file:
+    with fitdecode.FitReader(file_in) as fit_file:
         for frame in fit_file:
             if isinstance(frame, fitdecode.records.FitDataMessage):
                 if frame.name == "record":
@@ -169,7 +174,8 @@ def get_dataframes(fileIn: str) -> tuple[pd.DataFrame, pd.DataFrame]:
     return df_laps, df_points
 
 
-def df_finetuning_laps(df) -> pd.DataFrame:
+def df_finetuning_laps(df: pd.DataFrame) -> pd.DataFrame:
+    """Finetuning."""
     df = df_finetuning(df)
     # add lap counter as first column
     df.index.name = "lap"
@@ -178,21 +184,22 @@ def df_finetuning_laps(df) -> pd.DataFrame:
     return df
 
 
-def df_finetuning_points(df) -> pd.DataFrame:
+def df_finetuning_points(df: pd.DataFrame) -> pd.DataFrame:
+    """Finetuning."""
     df = df_finetuning(df)
     return df
 
 
-def df_finetuning(df) -> pd.DataFrame:
-    """
-    Column renaming and timezone localization.
-    """
+def df_finetuning(df: pd.DataFrame) -> pd.DataFrame:
+    """Column renaming and timezone localization."""
     df.columns = df.columns.str.replace("enhanced_", "")
     df = df_remove_timezone_info(df=df, local_timezone="Europe/Berlin")
     return df
 
 
-def df_remove_timezone_info(df, local_timezone="Europe/Berlin") -> pd.DataFrame:
+def df_remove_timezone_info(
+    df: pd.DataFrame, local_timezone: str = "Europe/Berlin"
+) -> pd.DataFrame:
     """
     Convert to local time.
 
@@ -204,12 +211,15 @@ def df_remove_timezone_info(df, local_timezone="Europe/Berlin") -> pd.DataFrame:
             df[c] = (
                 df[c]
                 # .dt.tz_localize("utc")
-                .dt.tz_convert(tz=local_timezone).dt.tz_localize(None)
+                .dt.tz_convert(tz=local_timezone)
+                .dt.tz_localize(None)
             )
     return df
 
 
-def calc_df_km(df_points, pause_threshhold=3.6 / 4) -> pd.DataFrame:
+def calc_df_km(
+    df_points: pd.DataFrame, pause_threshhold: float = 3.6 / 4
+) -> pd.DataFrame:
     """
     Calc kilometers.
 
@@ -237,14 +247,13 @@ def calc_df_km(df_points, pause_threshhold=3.6 / 4) -> pd.DataFrame:
     # print(df)
     # exit()
 
-    df.rename(
+    df = df.rename(
         columns={
             "distance": "distance_total",
             "ascent": "ascent_total",
             "descent": "descent_total",
         },
         errors="raise",
-        inplace=True,
     )
 
     # zero fill missing values
@@ -323,21 +332,25 @@ def calc_df_km(df_points, pause_threshhold=3.6 / 4) -> pd.DataFrame:
     # df.drop(columns=["m/s"], inplace=True)
 
     df = df.reset_index(level=0)
-    df.set_index(["km"], inplace=True)
+    df = df.set_index(["km"])
     # print(df)
     # exit()
     return df
 
 
-def export_excel(df_laps, df_points, df_km):
-    writer = pd.ExcelWriter(fileIn.replace(".fit", ".xlsx"), engine="xlsxwriter")
+def export_excel(
+    df_laps: pd.DataFrame, df_points: pd.DataFrame, df_km: pd.DataFrame
+) -> None:
+    """Export as Excel file."""
+    writer = pd.ExcelWriter(file_in.replace(".fit", ".xlsx"), engine="xlsxwriter")
     df_km.to_excel(writer, sheet_name="km", index=False)
     df_points.to_excel(writer, sheet_name="Points", index=False)
     df_laps.to_excel(writer, sheet_name="Laps", index=False)
     writer.close()
 
 
-def plot_km_chart_lines(df):
+def plot_km_chart_lines(df: pd.DataFrame) -> None:
+    """Plot km chart with lines."""
     import matplotlib.pyplot as plt
 
     # initialize plot
@@ -393,12 +406,13 @@ def plot_km_chart_lines(df):
 
     plt.grid(axis="both")
     plt.tight_layout()
-    plt.savefig(fileIn=fileIn.replace(".fit", "-plot-lines.png"), format="png")
+    plt.savefig(file_in=file_in.replace(".fit", "-plot-lines.png"), format="png")
     plt.clf()
     plt.close()
 
 
-def plot_km_chart_bars(df):
+def plot_km_chart_bars(df: pd.DataFrame) -> None:
+    """Plot km chart with bars."""
     colors = list(mcolors.TABLEAU_COLORS.keys())
     colors = ("tab:blue", "tab:red", "tab:orange", "tab:brown")
     # initialize plot
@@ -475,12 +489,12 @@ def plot_km_chart_bars(df):
     plt.tight_layout()
     # margins / borders
     # plt.margins(0)
-    plt.savefig(fileIn=fileIn.replace(".fit", "-plot-bars.png"), format="png")
+    plt.savefig(file_in=file_in.replace(".fit", "-plot-bars.png"), format="png")
     plt.close()
 
 
 if __name__ == "__main__":
-    df_laps, df_points = get_dataframes(fileIn)
+    df_laps, df_points = get_dataframes(file_in)
     df_laps = df_finetuning_laps(df=df_laps)
     df_points = df_finetuning_points(df=df_points)
     df_km = calc_df_km(df_points)

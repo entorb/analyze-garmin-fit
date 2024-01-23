@@ -1,6 +1,4 @@
-"""
-Check parameters.
-"""
+"""Check parameters."""
 
 # see https://towardsdatascience.com/parsing-fitness-tracker-data-with-python-a59e7dc17418
 import warnings
@@ -11,11 +9,11 @@ import fitdecode  # pip install fitdecode
 
 warnings.filterwarnings("ignore", message=".*native_field_num.*not found in message.*")
 
-fileIn = "data/231111.fit"
+file_in = "data/231111.fit"
 
 d_fields_lap = {}
 d_fields_record = {}
-with fitdecode.FitReader(fileIn) as fit_file:
+with fitdecode.FitReader(file_in) as fit_file:
     for frame in fit_file:
         if isinstance(frame, fitdecode.records.FitDataMessage):
             if frame.name == "lap":

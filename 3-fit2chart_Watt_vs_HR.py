@@ -12,7 +12,7 @@ only use for comparative tracks, preferable power ramps
 """
 
 
-import datetime as dt
+import datetime as dt  # noqa: TCH003
 import os
 import sys
 from pathlib import Path
@@ -28,7 +28,7 @@ from matplotlib.ticker import MultipleLocator  # df.index.max()
 
 
 # ensure working dir is script dir
-os.chdir(os.path.dirname(sys.argv[0]))
+os.chdir(Path(sys.argv[0]).parent)
 
 FIT_COLUMN_NAMES = ("timestamp", "power", "heart_rate", "cadence")
 ROUND_TO_WATT = 20
@@ -37,14 +37,14 @@ MIN_VALUES_PER_WATT = 20
 TIMEZONE_LOCAL = "Europe/Berlin"
 
 
-def load_fit_data(fileIn: Path) -> pd.DataFrame:
+def load_fit_data(file_in: Path) -> pd.DataFrame:
     """
     Load data from .fit file as DataFrame.
 
     parse only "record" data point, not lap aggregation
     """
     points_data = []
-    with fitdecode.FitReader(fileIn) as fit_file:
+    with fitdecode.FitReader(file_in) as fit_file:
         for frame in fit_file:
             if (
                 isinstance(frame, fitdecode.records.FitDataMessage)
@@ -92,11 +92,11 @@ def clean_and_prepare_data(df: pd.DataFrame) -> pd.DataFrame:
     df = df.query("seconds > 1 * 60")  # type: ignore
 
     # use seconds as index
-    df.set_index("seconds", inplace=True)  # type: ignore
+    df = df.set_index("seconds")  # type: ignore
 
     # round power to 20W
     df["power_rounded"] = df["power"].apply(  # type: ignore
-        lambda x: custom_round(x, base=ROUND_TO_WATT),  # noqa: C812 # type: ignore
+        lambda x: custom_round(x, base=ROUND_TO_WATT),  # type: ignore
     )
     # print(df)
     return df
@@ -117,12 +117,12 @@ def df_to_excel(df: pd.DataFrame) -> None:
     df["datetime"] = (
         df["datetime"].dt.tz_convert(tz=TIMEZONE_LOCAL).dt.tz_localize(None)
     )
-    writer = pd.ExcelWriter(path=fileIn.with_suffix(".xlsx"))
+    writer = pd.ExcelWriter(path=file_in.with_suffix(".xlsx"))
     df.to_excel(writer, sheet_name="Points", index=True)  # type: ignore
     writer.close()
 
 
-def plot_hr_vs_time(df: pd.DataFrame, fileIn: Path) -> None:
+def plot_hr_vs_time(df: pd.DataFrame, file_in: Path) -> None:
     """
     Plot actvity.
 
@@ -169,13 +169,11 @@ def plot_hr_vs_time(df: pd.DataFrame, fileIn: Path) -> None:
     # ax.xaxis.set_major_formatter(formatter)
 
     plt.tight_layout()  # type: ignore
-    plt.savefig(fname=fileIn.with_suffix(".png"), format="png")  # type: ignore
+    plt.savefig(fname=file_in.with_suffix(".png"), format="png")  # type: ignore
 
 
 def plot_all_df2s(list_df: list[pd.DataFrame], files: list[Path]) -> None:
-    """
-    Plot the calculated dataframes of HR vs. Watt.
-    """
+    """Plot the calculated dataframes of HR vs. Watt."""
     fig, ax = plt.subplots(  # type: ignore
         nrows=1,
         ncols=1,
@@ -185,13 +183,13 @@ def plot_all_df2s(list_df: list[pd.DataFrame], files: list[Path]) -> None:
     colors = [colormap(i / len(files)) for i in range(len(files))]  # type: ignore
 
     for i in range(len(files)):
-        fileIn = files[i]
+        file_in = files[i]
         df = list_df[i]
 
         df["heart_rate"].plot(
             ax=ax,
             legend=True,
-            label=fileIn.stem,
+            label=file_in.stem,
             color=colors[i],
             linewidth=3.0,
         )
@@ -209,10 +207,11 @@ def plot_all_df2s(list_df: list[pd.DataFrame], files: list[Path]) -> None:
     plt.savefig(fname="hr_vs_watt.png", format="png")  # type: ignore
 
 
-def doit(fileIn: Path) -> pd.DataFrame:
-    df = load_fit_data(fileIn)
+def doit(file_in: Path) -> pd.DataFrame:
+    """Do it."""
+    df = load_fit_data(file_in)
     df = clean_and_prepare_data(df)
-    plot_hr_vs_time(df=df, fileIn=fileIn)
+    plot_hr_vs_time(df=df, file_in=file_in)
     # df_to_excel(df=df)
 
     # group by power
@@ -238,11 +237,11 @@ if __name__ == "__main__":
     files = sorted(Path("data").glob("*.fit"))
     list_df: list[pd.DataFrame] = []
 
-    for fileIn in files:
+    for file_in in files:
         # fileIn = Path("data/231111.fit")
-        print(fileIn)
+        print(file_in)
 
-        df = doit(fileIn)
+        df = doit(file_in)
         list_df.append(df)
         max_watt = max(max_watt, df.index.max())  # type: ignore
     plot_all_df2s(list_df, files)
