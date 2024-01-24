@@ -11,7 +11,6 @@ plot heart rate vs. power
 only use for comparative tracks, preferable power ramps
 """
 
-
 import datetime as dt  # noqa: TCH003
 import os
 import sys
@@ -23,9 +22,6 @@ import numpy as np
 import pandas as pd
 from matplotlib import colormaps  # type: ignore
 from matplotlib.ticker import MultipleLocator  # df.index.max()
-
-# from time import gmtime, strftime
-
 
 # ensure working dir is script dir
 os.chdir(Path(sys.argv[0]).parent)

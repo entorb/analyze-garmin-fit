@@ -1,0 +1,25 @@
+# CSpell Custom Dictionary Words
+arange
+astype
+autoflake
+autoupdate
+colormaps
+coolwarm
+dataframes
+dropna
+fitdecode
+gmtime
+iloc
+isort
+linewidth
+ncols
+noqa
+nrows
+pyupgrade
+xaxis
+xlabel
+xlim
+xticks
+yaxis
+ylabel
+yticks
