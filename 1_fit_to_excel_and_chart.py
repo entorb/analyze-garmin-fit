@@ -1,3 +1,6 @@
+# TODO: make file ruff-compatible
+# ruff: noqa
+
 """
 Convert Fit file to Excel and plot chart.
 
@@ -12,9 +15,6 @@ see https://towardsdatascience.com/parsing-fitness-tracker-data-with-python-a59e
 and
 https://github.com/bunburya/fitness_tracker_data_parsing/blob/main/parse_fit.py
 """
-
-# TODO: make file ruff-compatible
-# ruff: noqa
 
 import datetime as dt  # import datetime, timedelta
 import os
@@ -111,7 +111,7 @@ def get_fit_lap_data(
 
     for field in LAPS_COLUMN_NAMES:
         if frame.has_field(field):
-            data[field] = frame.get_value(field)
+            data[field] = frame.get_value(field)  # type: ignore
 
     return data
 
@@ -137,7 +137,7 @@ def get_fit_point_data(
 
     for field in POINTS_COLUMN_NAMES:
         if frame.has_field(field):
-            data[field] = frame.get_value(field)
+            data[field] = frame.get_value(field)  # type: ignore
     return data
 
 
@@ -293,15 +293,15 @@ def calc_df_km(
     # df["m/s"] = df["distance_delta"] / df["time_delta"]
     df["km/h"] = df["distance_delta"] / df["time_delta"] * 3.6
 
-    # calc ascent and decending
+    # calc ascent and descent
     df["ascent"] = df["ascent_total"].diff()
     df.at[df.index[0], "ascent"] = df["ascent_total"].iloc[df.index[0]]
     df["descent"] = df["descent_total"].diff()
     df.at[df.index[0], "descent"] = df["descent_total"].iloc[df.index[0]]
     df["elevation"] = (df["ascent"] - df["descent"]) / df["distance_delta"] * 1000
 
-    # hreat_rate per km/h
-    # substracting a resting HR of 50 first
+    # heat_rate per km/h
+    # subtracting a resting HR of 50 first
     hr_resting = 50
     df["hr/kmh"] = (df["heart_rate"] - hr_resting) / df["km/h"]
 
@@ -457,7 +457,7 @@ def plot_km_chart_bars(df: pd.DataFrame) -> None:
             ls="--",
         )
 
-        # autoscale value range
+        # auto-scale value range
         low = df[series_name].min()
         high = df[series_name].max()
         ax[series_no].set_xlim(int(low - 1), int(high + 1))
