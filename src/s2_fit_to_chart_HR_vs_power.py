@@ -11,7 +11,7 @@ plot heart rate vs. power
 only use for comparative tracks, preferable power ramps
 """
 
-import datetime as dt  # noqa: TCH003
+import datetime as dt  # noqa: TC003
 import os
 import sys
 from pathlib import Path
@@ -125,7 +125,7 @@ def plot_hr_vs_time(df: pd.DataFrame, file_in: Path) -> None:
     plot heart_rate and power over seconds, use hear_rate as secondary axis
     """
     colors = ("tab:blue", "tab:red")  # tableau colors blue and red
-    fig, ax = plt.subplots(nrows=1, ncols=1)  # type: ignore
+    _fig, ax = plt.subplots(nrows=1, ncols=1)  # type: ignore
     max_watt: float = df["power"].max()  # type: ignore
     df["power"].plot(
         ax=ax,
@@ -160,17 +160,13 @@ def plot_hr_vs_time(df: pd.DataFrame, file_in: Path) -> None:
 
     ax.xaxis.set_minor_locator(MultipleLocator(60))
 
-    # # formatter = FuncFormatter(lambda sec, x: strftime("%M:%S", gmtime(sec)))
-    # formatter = FuncFormatter(lambda sec, x: sec / 60)
-    # ax.xaxis.set_major_formatter(formatter)
-
     plt.tight_layout()  # type: ignore
     plt.savefig(fname=file_in.with_suffix(".png"), format="png")  # type: ignore
 
 
 def plot_all_df2s(list_df: list[pd.DataFrame], files: list[Path]) -> None:
     """Plot the calculated dataframes of HR vs. Watt."""
-    fig, ax = plt.subplots(  # type: ignore
+    _fig, ax = plt.subplots(  # type: ignore
         nrows=1,
         ncols=1,
     )
@@ -234,9 +230,7 @@ if __name__ == "__main__":
     list_df: list[pd.DataFrame] = []
 
     for file_in in files:
-        # fileIn = Path("data/231111.fit")
         print(file_in)
-
         df = doit(file_in)
         list_df.append(df)
         max_watt = max(max_watt, df.index.max())  # type: ignore

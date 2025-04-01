@@ -1,6 +1,4 @@
-# TODO: make file ruff-compatible
-# ruff: noqa
-
+# ruff: noqa: PD008 PLR2004 FBT003
 """
 Convert Fit file to Excel and plot chart.
 
@@ -16,22 +14,17 @@ and
 https://github.com/bunburya/fitness_tracker_data_parsing/blob/main/parse_fit.py
 """
 
-import datetime as dt  # import datetime, timedelta
+import datetime as dt
 import os
 import sys
 import warnings
 from pathlib import Path
 
 import fitdecode  # pip install fitdecode
-import matplotlib.colors as mcolors
 import matplotlib.pyplot as plt
 import numpy as np
 import pandas as pd
 
-# from sys import argv
-# file_in = argv[1]  # Path to FIT file to be given as first argument to script
-file_in = "2022-07-28-140730-ELEMNT BOLT 7172-139-0.fit"
-file_in = "2022-07-31-062038-ELEMNT BOLT 7172-141-0.fit"
 file_in = "data/231111.fit"
 
 # ensure working dir is script dir
@@ -132,8 +125,8 @@ def get_fit_point_data(
         # We will ignore these frames in order to keep things simple
         return None
 
-    data["latitude"] = frame.get_value("position_lat") / ((2**32) / 360)
-    data["longitude"] = frame.get_value("position_long") / ((2**32) / 360)
+    data["latitude"] = frame.get_value("position_lat") / ((2**32) / 360)  # type: ignore
+    data["longitude"] = frame.get_value("position_long") / ((2**32) / 360)  # type: ignore
 
     for field in POINTS_COLUMN_NAMES:
         if frame.has_field(field):
@@ -218,7 +211,7 @@ def df_remove_timezone_info(
     return df
 
 
-def calc_df_km(
+def calc_df_km(  # noqa: PLR0915
     df_points: pd.DataFrame, pause_threshhold: float = 3.6 / 4
 ) -> pd.DataFrame:
     """
@@ -237,7 +230,7 @@ def calc_df_km(
     l_.extend(cols_sum)
     l_.extend(cols_max)
     for c in l_:
-        assert c in df_points.columns, c
+        assert c in df_points.columns, c  # noqa: S101
 
     # filter out pause speed < pause_threshhold
     df = df_points[df_points["speed"] > pause_threshhold]
@@ -245,8 +238,6 @@ def calc_df_km(
     df.index.name = "time_moving"
     # index -> column
     df = df.reset_index(level=0)
-    # print(df)
-    # exit()
 
     df = df.rename(
         columns={
@@ -269,8 +260,6 @@ def calc_df_km(
     df["descent_total"] -= df["descent_total"].iloc[0]
     df["calories"] -= df["calories"].iloc[0]
 
-    # df = df[["distance", "time_moving", "heart_rate"]]
-    # df.set_index(["timestamp"], inplace=True)
     df["km_lap"] = 1 + df["distance_total"] / 1000
     df["km_lap"] = df["km_lap"].astype("int")
     df = df.groupby(["km_lap"]).agg(
@@ -334,8 +323,6 @@ def calc_df_km(
 
     df = df.reset_index(level=0)
     df = df.set_index(["km"])
-    # print(df)
-    # exit()
     return df
 
 
@@ -355,11 +342,11 @@ def plot_km_chart_lines(df: pd.DataFrame) -> None:
     import matplotlib.pyplot as plt
 
     # initialize plot
-    fig, ax = plt.subplots(
+    _fig, ax = plt.subplots(
         nrows=2,
         ncols=1,
         sharex=True,
-        figsize=(6, 8),  # default = 6.4,4.8
+        figsize=(6, 8),  # default: 6.4,4.8
         dpi=100,
         # smaller plot 1, larger plot 2
         gridspec_kw={"width_ratios": [1], "height_ratios": [1, 3]},
@@ -393,17 +380,10 @@ def plot_km_chart_lines(df: pd.DataFrame) -> None:
         labeltop=False,
     )
     ax[1].grid(zorder=0, axis="both")
-    # ax1r = ax[1].twinx()
-    # ax1r.grid(None)
     ax[1].right_ax.grid(None)
 
     ax[1].grid(True)
     ax[1].set_axisbelow(True)
-
-    # layout
-    # plt.margins(0)
-    # ax[0].margins(0)
-    # ax[1].margins(0)
 
     plt.grid(axis="both")
     plt.tight_layout()
@@ -414,20 +394,18 @@ def plot_km_chart_lines(df: pd.DataFrame) -> None:
 
 def plot_km_chart_bars(df: pd.DataFrame) -> None:
     """Plot km chart with bars."""
-    colors = list(mcolors.TABLEAU_COLORS.keys())
+    # colors = list(mcolors.TABLEAU_COLORS.keys())
     colors = ("tab:blue", "tab:red", "tab:orange", "tab:brown")
     # initialize plot
-    fig, ax = plt.subplots(
+    _fig, ax = plt.subplots(
         nrows=1,
         ncols=4,
         sharey=True,
-        figsize=(10.8, 19.2),  # default = 6.4,4.8
+        figsize=(10.8, 19.2),
         dpi=100,
         # smaller plot 1, larger plot 2
         # gridspec_kw={"width_ratios": [1, 1, 1,1], "height_ratios": [1]},
     )
-
-    # colors = ("purple", "blue", "red")
 
     series_to_plot = ["km/h", "heart_rate", "hr/kmh", "elevation"]
 
@@ -488,8 +466,6 @@ def plot_km_chart_bars(df: pd.DataFrame) -> None:
     # layout
     plt.subplots_adjust(wspace=0, hspace=0)
     plt.tight_layout()
-    # margins / borders
-    # plt.margins(0)
     plt.savefig(file_in=file_in.replace(".fit", "-plot-bars.png"), format="png")
     plt.close()
 
