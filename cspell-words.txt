@@ -32,6 +32,8 @@ nrows
 pyupgrade
 sharex
 sharey
+SonarCloud
+SonarQube
 threshhold
 twinx
 wspace
