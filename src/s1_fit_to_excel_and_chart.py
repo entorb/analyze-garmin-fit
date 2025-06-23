@@ -230,7 +230,7 @@ def calc_df_km(  # noqa: PLR0915
     l_.extend(cols_sum)
     l_.extend(cols_max)
     for c in l_:
-        assert c in df_points.columns, c  # noqa: S101
+        assert c in df_points.columns, c
 
     # filter out pause speed < pause_threshhold
     df = df_points[df_points["speed"] > pause_threshhold]
@@ -339,8 +339,6 @@ def export_excel(
 
 def plot_km_chart_lines(df: pd.DataFrame) -> None:
     """Plot km chart with lines."""
-    import matplotlib.pyplot as plt
-
     # initialize plot
     _fig, ax = plt.subplots(
         nrows=2,
