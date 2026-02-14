@@ -14,16 +14,19 @@ and
 https://github.com/bunburya/fitness_tracker_data_parsing/blob/main/parse_fit.py
 """
 
-import datetime as dt
 import os
 import sys
 import warnings
 from pathlib import Path
+from typing import TYPE_CHECKING
 
 import fitdecode  # pip install fitdecode
 import matplotlib.pyplot as plt
 import numpy as np
 import pandas as pd
+
+if TYPE_CHECKING:
+    import datetime as dt
 
 file_in = "data/231111.fit"
 
@@ -205,7 +208,7 @@ def df_remove_timezone_info(
             df[c] = (
                 df[c]
                 # .dt.tz_localize("utc")
-                .dt.tz_convert(tz=local_timezone)
+                .dt.tz_convert(tz=local_timezone)  # type: ignore
                 .dt.tz_localize(None)
             )
     return df

@@ -9,6 +9,7 @@ barh
 colormaps
 coolwarm
 dataframes
+defusedxml
 dropna
 ELEMNT
 figsize
@@ -25,10 +26,13 @@ labelleft
 labelright
 labeltop
 linewidth
+matplotlib
 mcolors
 ncols
 noqa
 nrows
+numpy
+pytest
 pyupgrade
 sharex
 sharey
