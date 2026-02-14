@@ -111,7 +111,7 @@ def df_to_excel(df: pd.DataFrame) -> None:
     timezone is dropped from datetime, as Excel can not handle timezone information
     """
     df["datetime"] = (
-        df["datetime"].dt.tz_convert(tz=TIMEZONE_LOCAL).dt.tz_localize(None)
+        df["datetime"].dt.tz_convert(tz=TIMEZONE_LOCAL).dt.tz_localize(None)  # type: ignore
     )
     writer = pd.ExcelWriter(path=file_in.with_suffix(".xlsx"))
     df.to_excel(writer, sheet_name="Points", index=True)  # type: ignore
