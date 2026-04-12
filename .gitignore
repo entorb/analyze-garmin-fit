@@ -1,0 +1,6 @@
+.vscode/
+data/
+.DS_Store
+
+*.png
+test.py
