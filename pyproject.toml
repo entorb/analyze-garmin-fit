@@ -23,7 +23,6 @@ exclude_lines = ["pragma: no cover", "if __name__ == \"__main__\":"]
 
 [dependency-groups]
 dev = [
-    "pre-commit>=4.5.1",
     "pytest>=9.0.2",
     "pytest-cov>=7.0.0",
     "ruff>=0.15.1",
