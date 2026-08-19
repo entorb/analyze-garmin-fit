@@ -20,6 +20,7 @@ Qube
 rumdl
 sharex
 sharey
+shfmt
 sonarcloud
 testpaths
 threshhold
